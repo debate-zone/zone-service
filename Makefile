@@ -1,10 +1,10 @@
 .PHONY: install start test clean
 
 # Set the default target to 'start' when calling `make` with no arguments.
-.DEFAULT_GOAL := start
+.DEFAULT_GOAL := start-flow
 
 
-template-micro-service-run-flow:\
+start-flow:\
 	clean\
 	install\
 	start

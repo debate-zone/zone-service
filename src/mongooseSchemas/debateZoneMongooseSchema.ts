@@ -1,12 +1,12 @@
-import * as mongoose from "mongoose"
-import {Document, Types} from "mongoose"
-import {DebateZone} from "../types"
-import { baseSchema } from '../../../../debate-zone-micro-service-common-library/src/mongoose/baseSchema';
-import {Type} from "../enums/type";
-import {Role} from "../enums/role";
-import { CollectionsEnum } from '../../../../debate-zone-micro-service-common-library/src/enums/collectionsEnum';
+import * as mongoose from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { DebateZone } from '../types';
+import { baseSchema } from '../../../debate-zone-micro-service-common-library/src/mongoose/baseSchema';
+import { Type } from '../enums/type';
+import { Role } from '../enums/role';
+import { CollectionsEnum } from '../../../debate-zone-micro-service-common-library/src/enums/collectionsEnum';
 
-export type DebateZoneDocument = Document & DebateZone
+export type DebateZoneDocument = Document & DebateZone;
 
 export const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
     userId: {
@@ -49,12 +49,15 @@ export const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
                 type: String,
                 enum: Object.values(Role),
                 required: true,
-            }
-        }
+            },
+        },
     },
     isSave: {
         type: Boolean,
-    }
-})
+    },
+});
 
-export const debateZoneMongooseModel = mongoose.model<DebateZoneDocument>(CollectionsEnum.DEBATE_ZONE, debateZoneMongooseSchema)
+export const debateZoneMongooseModel = mongoose.model<DebateZoneDocument>(
+    CollectionsEnum.DEBATE_ZONE,
+    debateZoneMongooseSchema,
+);
