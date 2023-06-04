@@ -6,16 +6,22 @@ import {
     outputDebateZoneSchema,
     updateDebateZoneSchema
 } from "./zodSchema";
-import {getDebateZoneById, getListDebateZone, joinDebateZone, saveDebateZone} from "./services/baseDebateZoneService";
+import {
+    getDebateZoneById,
+    getListDebateZone,
+    joinDebateZone,
+    newDebateZone,
+} from "./services/baseDebateZoneService";
 import {z} from "zod";
+import {OutputDebateZone} from "./types";
 
 export const saveDebateZoneEndpoint = defaultEndpointsFactory.build({
     method: "post",
-    input: updateDebateZoneSchema || newDebateZoneSchema,
+    input: newDebateZoneSchema,
     output: outputDebateZoneSchema,
     handler: async ({input, options, logger }) => {
         logger.debug("Options:", options)
-        return saveDebateZone(input)
+        return newDebateZone(input)
     },
 })
 
@@ -48,7 +54,7 @@ export const joinDebateZoneEndpoint = defaultEndpointsFactory.build({
         id: z.string(),
     }),
     output: outputDebateZoneSchema,
-    handler: async ({input, options, logger }) => {
+    handler: async ({input, options, logger }): Promise<OutputDebateZone> => {
         logger.debug("Options:", options)
         return await joinDebateZone(input.id)
     }

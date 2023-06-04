@@ -37,18 +37,21 @@ export const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
     isPublicChoice: {
         type: Boolean,
     },
-    participants: [{
-        userId: {
-            type: Types.ObjectId,
-            ref: CollectionsEnum.USER,
-            required: true,
-        },
-        role: {
-            type: String,
-            enum: Object.values(Role),
-            required: true,
+    participants: {
+        type: Array,
+        of: {
+            userId: {
+                type: Types.ObjectId,
+                ref: CollectionsEnum.USER,
+                required: true,
+            },
+            role: {
+                type: String,
+                enum: Object.values(Role),
+                required: true,
+            }
         }
-    }],
+    },
     isSave: {
         type: Boolean,
     }
