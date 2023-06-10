@@ -14,6 +14,27 @@ export const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
         ref: CollectionsEnum.USER,
         required: true,
     },
+    title: {
+        type: String,
+        required: true,
+    },
+    rounds: {
+        type: Array,
+        of: {
+            time: {
+                type: Number,
+                required: true,
+            },
+            activeUserId: {
+                type: Types.ObjectId,
+                ref: CollectionsEnum.USER,
+                required: true,
+            },
+            isFinished: {
+                type: Boolean,
+            },
+        },
+    },
     shortDescription: {
         type: String,
         required: true,
@@ -51,6 +72,10 @@ export const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
                 required: true,
             },
         },
+    },
+    winnerUserId: {
+        type: Types.ObjectId,
+        ref: CollectionsEnum.USER,
     },
     isSave: {
         type: Boolean,

@@ -16,7 +16,7 @@ import {
 import { z } from 'zod';
 import { OutputDebateZone } from './types';
 
-export const saveDebateZoneEndpoint = defaultEndpointsFactory.build({
+export const createDebateZoneEndpoint = defaultEndpointsFactory.build({
     method: 'post',
     input: newDebateZoneSchema,
     output: outputDebateZoneSchema,
