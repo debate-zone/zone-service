@@ -3,16 +3,18 @@ import {
     getDebateZoneByIdEndpoint,
     getListOfDebateZoneEndpoint,
     joinDebateZoneEndpoint,
-    saveDebateZoneEndpoint,
+    createDebateZoneEndpoint,
     updateDebateZoneEndpoint,
 } from './endpoint';
 
 export const routing: Routing = {
     v1: {
-        save: saveDebateZoneEndpoint,
-        update: updateDebateZoneEndpoint,
-        list: getListOfDebateZoneEndpoint,
-        details: getDebateZoneByIdEndpoint,
-        join: joinDebateZoneEndpoint,
+        'debate-zones': {
+            create: createDebateZoneEndpoint,
+            update: updateDebateZoneEndpoint,
+            list: getListOfDebateZoneEndpoint,
+            details: getDebateZoneByIdEndpoint,
+            join: joinDebateZoneEndpoint,
+        },
     },
 };

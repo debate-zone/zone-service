@@ -22,11 +22,19 @@ export const participantSchema = z.object({
     role: z.string(),
 });
 
+export const roundSchema = z.object({
+    time: z.number(),
+    activeUserId: idObjectIdsSchema,
+    isFinished: z.boolean().optional(),
+});
+
 export const debateZoneSchema = baseZodSchema.extend({
     userId: idObjectIdsSchema,
+    title: z.string(),
     shortDescription: z.string(),
     type: z.nativeEnum(Type),
     date: z.date(),
+    rounds: z.array(roundSchema).optional(),
     isPrivate: z.boolean().optional(),
     isAIReferee: z.boolean().optional(),
     isPublicChoice: z.boolean().optional(),
@@ -76,7 +84,8 @@ export const outputDebateZoneSchema = debateZoneSchema
     })
     .extend({
         date: z.date(),
-    });
+    })
+    .partial();
 
 export const outputDebateZoneListSchema = z.object({
     debateZones: z.array(outputDebateZoneSchema),
