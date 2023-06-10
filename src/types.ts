@@ -5,6 +5,7 @@ import {
     outputDebateZoneListSchema,
     outputDebateZoneSchema,
     participantSchema,
+    roundSchema,
     updateDebateZoneSchema,
 } from './zodSchema';
 import { z } from 'zod';
@@ -22,3 +23,5 @@ export type NewParticipant = z.infer<typeof newParticipantSchema>;
 export type OutputDebateZone = z.infer<typeof outputDebateZoneSchema>;
 
 export type OutputDebateZoneList = z.infer<typeof outputDebateZoneListSchema>;
+
+export type Round = z.infer<typeof roundSchema>;

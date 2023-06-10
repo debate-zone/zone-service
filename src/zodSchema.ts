@@ -69,9 +69,11 @@ export const newDebateZoneSchema = debateZoneSchema
         __v: true,
         participants: true,
         createdAt: true,
+        rounds: true,
     })
     .extend({
         date: debateZoneDateSchema,
+        roundTime: z.number(),
         participants: z
             .array(newParticipantSchema)
             .min(2, { message: 'Must have at least 2 participants' })

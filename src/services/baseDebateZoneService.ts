@@ -5,6 +5,7 @@ import {
     OutputDebateZone,
     OutputDebateZoneList,
     Participant,
+    Round,
     UpdateDebateZone,
 } from '../types';
 import { debateZoneDbController } from '../dbControllers/debateZoneDbController';
@@ -33,7 +34,7 @@ async function createNewUser(newParticipant: NewParticipant) {
         | undefined = undefined;
     try {
         const response = await axios.post(
-            `${process.env.USER_MICRO_SERVICE_URL}/users/newUser`,
+            `${process.env.USER_MICRO_SERVICE_URL}/users/new`,
             {
                 email:
                     newParticipant.email != null
@@ -70,7 +71,7 @@ async function handleParticipants(
 
         const participantToSave: Participant = {
             userId: user._id,
-            role: Role.PARTICIPANT,
+            role: Role.DEBATER,
         };
         participantsToSave.push(participantToSave);
     }
@@ -81,10 +82,24 @@ export const newDebateZone = async (
     saveDebateZoneInput: NewDebateZone,
 ): Promise<OutputDebateZone> => {
     const participants = await handleParticipants(saveDebateZoneInput);
+    // todo in dependence on type or add selector in new debate zone component
+    const rounds: Round[] = [];
+
+    participants.forEach(participant => {
+        if (participant.role === Role.DEBATER) {
+            const round: Round = {
+                activeUserId: participant.userId,
+                time: saveDebateZoneInput.roundTime,
+            };
+            rounds.push(round);
+        }
+    });
 
     const debateZoneToSave: DebateZone | null = {
         ...saveDebateZoneInput,
+        userId: '60b8f8bdf8e5a20fec8b8a54',
         date: new Date(saveDebateZoneInput.date),
+        rounds: rounds,
         participants: participants,
     };
 
@@ -181,14 +196,14 @@ export const joinDebateZone = async (id: string): Promise<OutputDebateZone> => {
         outputDebateZone.participants.push({
             // todo get user id from auth
             userId: '123',
-            role: Role.PARTICIPANT,
+            role: Role.DEBATER,
         });
     } else {
         outputDebateZone.participants = [
             {
                 // todo get user id from auth
                 userId: '123',
-                role: Role.PARTICIPANT,
+                role: Role.DEBATER,
             },
         ];
     }
