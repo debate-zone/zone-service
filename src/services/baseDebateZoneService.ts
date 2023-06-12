@@ -3,6 +3,7 @@ import {
     NewDebateZone,
     NewParticipant,
     OutputDebateZone,
+    OutputDebateZoneDetail,
     OutputDebateZoneList,
     Participant,
     Round,
@@ -14,6 +15,8 @@ import { Role } from '../enums/role';
 import { produceNotification } from '../kafka/producer/notification';
 import axios from 'axios';
 import 'dotenv/config';
+import { isAlreadyJoined, isTimeExpiredToJoin } from './joinDebateZoneService';
+import mongoose from 'mongoose';
 
 async function notifyUserAboutInvite(
     userId: string,
@@ -80,7 +83,7 @@ async function handleParticipants(
 
 export const newDebateZone = async (
     saveDebateZoneInput: NewDebateZone,
-): Promise<OutputDebateZone> => {
+): Promise<DebateZone> => {
     const participants = await handleParticipants(saveDebateZoneInput);
     // todo in dependence on type or add selector in new debate zone component
     const rounds: Round[] = [];
@@ -97,8 +100,13 @@ export const newDebateZone = async (
 
     const debateZoneToSave: DebateZone | null = {
         ...saveDebateZoneInput,
-        userId: '60b8f8bdf8e5a20fec8b8a54',
+        userId: new mongoose.Types.ObjectId('60b8f8bdf8e5a20fec8b8a54'),
         date: new Date(saveDebateZoneInput.date),
+        //saveDebateZoneInput.roundTime is in minutes
+        finishDate: new Date(
+            new Date(saveDebateZoneInput.date).getTime() +
+                saveDebateZoneInput.roundTime * rounds.length * 60000,
+        ),
         rounds: rounds,
         participants: participants,
     };
@@ -118,27 +126,30 @@ export const newDebateZone = async (
 export const getListDebateZone = async (): Promise<OutputDebateZoneList> => {
     const time = new Date();
 
-    const debateZones: DebateZone[] = await debateZoneDbController.findAll({
-        $and: [
-            {
-                date: {
-                    $gt: time,
+    const debateZones: DebateZone[] = await debateZoneDbController.findAll(
+        {
+            $and: [
+                {
+                    date: {
+                        $gt: time,
+                    },
                 },
-            },
-            {
-                $or: [
-                    {
-                        isPrivate: false,
-                    },
-                    {
-                        isPrivate: {
-                            $exists: false,
+                {
+                    $or: [
+                        {
+                            isPrivate: false,
                         },
-                    },
-                ],
-            },
-        ],
-    });
+                        {
+                            isPrivate: {
+                                $exists: false,
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+        { date: 'asc' },
+    );
 
     const outputDebateZones: OutputDebateZone[] = debateZones.map(
         debateZone => {
@@ -152,9 +163,13 @@ export const getListDebateZone = async (): Promise<OutputDebateZoneList> => {
     };
 };
 
+const isLive = (debateZone: DebateZone): boolean => {
+    return debateZone.date < new Date() && debateZone.finishDate > new Date();
+};
+
 export const getDebateZoneById = async (
     id: string,
-): Promise<OutputDebateZone> => {
+): Promise<OutputDebateZoneDetail> => {
     const debateZone: DebateZone | null = await debateZoneDbController.findOne({
         _id: id,
     });
@@ -163,7 +178,20 @@ export const getDebateZoneById = async (
         throw createHttpError(404, 'Could not find debate zone.');
     } else {
         const { __v, ...rest } = debateZone;
-        return rest as OutputDebateZone;
+
+        const outputDebateZoneDetails = rest as OutputDebateZoneDetail;
+
+        outputDebateZoneDetails.isTimeExpiredToJoin =
+            isTimeExpiredToJoin(debateZone);
+        outputDebateZoneDetails.isAlreadyJoined = isAlreadyJoined(
+            debateZone,
+            // todo auth user id
+            '60b8f8bdf8e5a20fec8b8a54',
+        );
+        outputDebateZoneDetails.isAlreadyFinished =
+            debateZone.date < new Date();
+
+        return outputDebateZoneDetails;
     }
 };
 
@@ -187,37 +215,5 @@ export const updateDebateZone = async (
     } else {
         const { __v, ...rest } = debateZone;
         return rest as OutputDebateZone;
-    }
-};
-
-export const joinDebateZone = async (id: string): Promise<OutputDebateZone> => {
-    const outputDebateZone: OutputDebateZone = await getDebateZoneById(id);
-    if (outputDebateZone.participants) {
-        outputDebateZone.participants.push({
-            // todo get user id from auth
-            userId: '123',
-            role: Role.DEBATER,
-        });
-    } else {
-        outputDebateZone.participants = [
-            {
-                // todo get user id from auth
-                userId: '123',
-                role: Role.DEBATER,
-            },
-        ];
-    }
-    const savedDebateZone: DebateZone | null =
-        await debateZoneDbController.save(
-            {
-                _id: id,
-            },
-            outputDebateZone,
-        );
-
-    if (!savedDebateZone) {
-        throw createHttpError(500, 'Could not save debate zone.');
-    } else {
-        return savedDebateZone as OutputDebateZone;
     }
 };

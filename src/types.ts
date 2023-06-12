@@ -2,8 +2,14 @@ import {
     debateZoneSchema,
     newDebateZoneSchema,
     newParticipantSchema,
+    outputActiveDebateZoneDetailsSchema,
+    outputActiveDebateZoneListSchema,
+    outputActiveDebateZoneSchema,
+    outputDebateZoneDetailsSchema,
     outputDebateZoneListSchema,
     outputDebateZoneSchema,
+    outputProfileDebateZoneListSchema,
+    outputProfileDebateZoneSchema,
     participantSchema,
     roundSchema,
     updateDebateZoneSchema,
@@ -25,3 +31,27 @@ export type OutputDebateZone = z.infer<typeof outputDebateZoneSchema>;
 export type OutputDebateZoneList = z.infer<typeof outputDebateZoneListSchema>;
 
 export type Round = z.infer<typeof roundSchema>;
+
+export type OutputDebateZoneDetail = z.infer<
+    typeof outputDebateZoneDetailsSchema
+>;
+
+export type OutputActiveDebateZone = z.infer<
+    typeof outputActiveDebateZoneSchema
+>;
+
+export type OutputActiveDebateZoneList = z.infer<
+    typeof outputActiveDebateZoneListSchema
+>;
+
+export type OutputActiveDebateZoneDetails = z.infer<
+    typeof outputActiveDebateZoneDetailsSchema
+>;
+
+export type OutputProfileDebateZone = z.infer<
+    typeof outputProfileDebateZoneSchema
+>;
+
+export type OutputProfileDebateZoneList = z.infer<
+    typeof outputProfileDebateZoneListSchema
+>;

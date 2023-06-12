@@ -5,6 +5,9 @@ import {
     joinDebateZoneEndpoint,
     createDebateZoneEndpoint,
     updateDebateZoneEndpoint,
+    getActiveDebateZoneListEndpoint,
+    getActiveDebateZoneDetailsEndpoint,
+    getProfileDebateZoneListEndpoint,
 } from './endpoint';
 
 export const routing: Routing = {
@@ -15,6 +18,13 @@ export const routing: Routing = {
             list: getListOfDebateZoneEndpoint,
             details: getDebateZoneByIdEndpoint,
             join: joinDebateZoneEndpoint,
+            active: {
+                list: getActiveDebateZoneListEndpoint,
+                details: getActiveDebateZoneDetailsEndpoint,
+            },
+            profile: {
+                list: getProfileDebateZoneListEndpoint,
+            },
         },
     },
 };
