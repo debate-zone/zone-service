@@ -49,6 +49,11 @@ export const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
         required: true,
         min: new Date(),
     },
+    finishDate: {
+        type: Date,
+        required: true,
+        min: new Date(),
+    },
     isPrivate: {
         type: Boolean,
     },

@@ -34,6 +34,7 @@ export const debateZoneSchema = baseZodSchema.extend({
     shortDescription: z.string(),
     type: z.nativeEnum(Type),
     date: z.date(),
+    finishDate: z.date(),
     rounds: z.array(roundSchema).optional(),
     isPrivate: z.boolean().optional(),
     isAIReferee: z.boolean().optional(),
@@ -70,6 +71,7 @@ export const newDebateZoneSchema = debateZoneSchema
         participants: true,
         createdAt: true,
         rounds: true,
+        finishDate: true,
     })
     .extend({
         date: debateZoneDateSchema,
@@ -86,8 +88,9 @@ export const outputDebateZoneSchema = debateZoneSchema
     })
     .extend({
         date: z.date(),
-    })
-    .partial();
+    });
+
+export const outputNewDebateZoneSchema = outputDebateZoneSchema.extend({});
 
 export const outputDebateZoneListSchema = z.object({
     debateZones: z.array(outputDebateZoneSchema),
@@ -95,4 +98,28 @@ export const outputDebateZoneListSchema = z.object({
 
 export const inputDebateZoneIdSchema = z.object({
     id: idObjectIdsSchema,
+});
+
+export const inputActiveDebateZoneIdSchema = z.object({
+    id: idObjectIdsSchema,
+});
+
+export const outputDebateZoneDetailsSchema = debateZoneSchema.extend({
+    isTimeExpiredToJoin: z.boolean(),
+    isAlreadyJoined: z.boolean(),
+    isAlreadyFinished: z.boolean(),
+});
+
+export const outputActiveDebateZoneSchema = outputDebateZoneSchema.extend({});
+
+export const outputActiveDebateZoneListSchema = z.object({
+    debateZones: z.array(outputActiveDebateZoneSchema),
+});
+
+export const outputActiveDebateZoneDetailsSchema =
+    outputDebateZoneSchema.extend({});
+
+export const outputProfileDebateZoneSchema = outputDebateZoneSchema.extend({});
+export const outputProfileDebateZoneListSchema = z.object({
+    debateZones: z.array(outputProfileDebateZoneSchema),
 });
