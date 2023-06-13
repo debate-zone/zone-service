@@ -16,7 +16,6 @@ import { produceNotification } from '../kafka/producer/notification';
 import axios from 'axios';
 import 'dotenv/config';
 import { isAlreadyJoined, isTimeExpiredToJoin } from './joinDebateZoneService';
-import mongoose from 'mongoose';
 
 async function notifyUserAboutInvite(
     userId: string,
@@ -83,6 +82,7 @@ async function handleParticipants(
 
 export const newDebateZone = async (
     saveDebateZoneInput: NewDebateZone,
+    userId: string,
 ): Promise<DebateZone> => {
     const participants = await handleParticipants(saveDebateZoneInput);
     // todo in dependence on type or add selector in new debate zone component
@@ -100,7 +100,7 @@ export const newDebateZone = async (
 
     const debateZoneToSave: DebateZone | null = {
         ...saveDebateZoneInput,
-        userId: new mongoose.Types.ObjectId('60b8f8bdf8e5a20fec8b8a54'),
+        userId: userId,
         date: new Date(saveDebateZoneInput.date),
         //saveDebateZoneInput.roundTime is in minutes
         finishDate: new Date(
@@ -123,26 +123,54 @@ export const newDebateZone = async (
     }
 };
 
-export const getListDebateZone = async (): Promise<OutputDebateZoneList> => {
+export const getListDebateZone = async (
+    userId: string,
+): Promise<OutputDebateZoneList> => {
     const time = new Date();
 
     const debateZones: DebateZone[] = await debateZoneDbController.findAll(
         {
-            $and: [
+            $or: [
                 {
-                    date: {
-                        $gt: time,
-                    },
-                },
-                {
-                    $or: [
+                    $and: [
                         {
-                            isPrivate: false,
+                            date: {
+                                $gt: time,
+                            },
                         },
                         {
-                            isPrivate: {
-                                $exists: false,
+                            $or: [
+                                {
+                                    isPrivate: false,
+                                },
+                                {
+                                    isPrivate: {
+                                        $exists: false,
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    $and: [
+                        {
+                            date: {
+                                $gt: time,
                             },
+                        },
+                        {
+                            $or: [
+                                {
+                                    'participants.userId': userId,
+                                },
+                                {
+                                    userId: userId,
+                                },
+                            ],
+                        },
+                        {
+                            isPrivate: true,
                         },
                     ],
                 },
@@ -169,6 +197,7 @@ const isLive = (debateZone: DebateZone): boolean => {
 
 export const getDebateZoneById = async (
     id: string,
+    userId: string,
 ): Promise<OutputDebateZoneDetail> => {
     const debateZone: DebateZone | null = await debateZoneDbController.findOne({
         _id: id,
@@ -185,8 +214,7 @@ export const getDebateZoneById = async (
             isTimeExpiredToJoin(debateZone);
         outputDebateZoneDetails.isAlreadyJoined = isAlreadyJoined(
             debateZone,
-            // todo auth user id
-            '60b8f8bdf8e5a20fec8b8a54',
+            userId,
         );
         outputDebateZoneDetails.isAlreadyFinished =
             debateZone.date < new Date();

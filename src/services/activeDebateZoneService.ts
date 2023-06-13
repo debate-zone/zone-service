@@ -7,39 +7,81 @@ import {
 import { debateZoneDbController } from '../dbControllers/debateZoneDbController';
 import { createHttpError } from 'express-zod-api';
 
-export const getActiveDebateZones =
-    async (): Promise<OutputActiveDebateZoneList> => {
-        const now = new Date();
-
-        console.log('now', now);
-        const debateZones: DebateZone[] = await debateZoneDbController.findAll(
-            {
-                $and: [
-                    {
-                        date: {
-                            $lte: new Date(),
+export const getActiveDebateZones = async (
+    userId: string,
+): Promise<OutputActiveDebateZoneList> => {
+    const debateZones: DebateZone[] = await debateZoneDbController.findAll(
+        {
+            $or: [
+                {
+                    $and: [
+                        {
+                            date: {
+                                $lte: new Date(),
+                            },
                         },
-                    },
-                    {
-                        finishDate: {
-                            $gte: new Date(),
+                        {
+                            finishDate: {
+                                $gte: new Date(),
+                            },
                         },
-                    },
-                ],
-            },
-            { date: 'asc' },
-        );
+                        {
+                            $or: [
+                                {
+                                    isPrivate: false,
+                                },
+                                {
+                                    isPrivate: {
+                                        $exists: false,
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    $and: [
+                        {
+                            date: {
+                                $lte: new Date(),
+                            },
+                        },
+                        {
+                            finishDate: {
+                                $gte: new Date(),
+                            },
+                        },
+                        {
+                            isPrivate: true,
+                        },
+                        {
+                            $or: [
+                                {
+                                    'participants.userId': userId,
+                                },
+                                {
+                                    userId: userId,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+        { date: 'asc' },
+    );
 
-        const outputActiveDebateZones: OutputActiveDebateZone[] =
-            debateZones.map(debateZone => {
-                const { __v, ...rest } = debateZone;
-                return rest as OutputActiveDebateZone;
-            });
+    const outputActiveDebateZones: OutputActiveDebateZone[] = debateZones.map(
+        debateZone => {
+            const { __v, ...rest } = debateZone;
+            return rest as OutputActiveDebateZone;
+        },
+    );
 
-        return {
-            debateZones: outputActiveDebateZones,
-        };
+    return {
+        debateZones: outputActiveDebateZones,
     };
+};
 
 export const getActiveDebateZoneDetails = async (
     id: string,

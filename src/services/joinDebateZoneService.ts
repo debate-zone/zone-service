@@ -18,23 +18,22 @@ function validateJoin(outputDebateZoneDetail: OutputDebateZoneDetail) {
 
 export const joinDebateZone = async (
     id: string,
+    userId: string,
 ): Promise<OutputDebateZoneDetail> => {
     const outputDebateZoneDetail: OutputDebateZoneDetail =
-        await getDebateZoneById(id);
+        await getDebateZoneById(id, userId);
 
     validateJoin(outputDebateZoneDetail);
 
     if (outputDebateZoneDetail.participants) {
         outputDebateZoneDetail.participants.push({
-            // todo get user id from auth
-            userId: '60b8f8bdf8e5a20fec8b8a54',
+            userId: userId,
             role: Role.DEBATER,
         });
     } else {
         outputDebateZoneDetail.participants = [
             {
-                // todo get user id from auth
-                userId: '60b8f8bdf8e5a20fec8b8a54',
+                userId: userId,
                 role: Role.DEBATER,
             },
         ];
@@ -50,7 +49,7 @@ export const joinDebateZone = async (
     if (!savedDebateZone) {
         throw createHttpError(500, 'Could not save debate zone.');
     } else {
-        return await getDebateZoneById(id);
+        return await getDebateZoneById(id, userId);
     }
 };
 

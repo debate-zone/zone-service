@@ -1,4 +1,4 @@
-import { defaultEndpointsFactory } from 'express-zod-api';
+import { createMiddleware, defaultEndpointsFactory } from 'express-zod-api';
 import {
     inputActiveDebateZoneIdSchema,
     inputDebateZoneIdSchema,
@@ -27,39 +27,55 @@ import {
 } from './services/activeDebateZoneService';
 import { getProfileDebateZoneList } from './services/profileDebateZoneService';
 
-export const createDebateZoneEndpoint = defaultEndpointsFactory.build({
+export const authMiddleware = createMiddleware({
+    input: z.object({}),
+    middleware: async ({ input: {}, request, logger }) => {
+        const userId = request.headers['x-user-id'] as string;
+        const userRole = request.headers['x-user-role'] as string;
+
+        return {
+            userId,
+            userRole,
+        };
+    },
+});
+
+export const endpointsFactory =
+    defaultEndpointsFactory.addMiddleware(authMiddleware);
+
+export const createDebateZoneEndpoint = endpointsFactory.build({
     method: 'post',
     input: newDebateZoneSchema,
     output: outputNewDebateZoneSchema,
     handler: async ({ input, options, logger }) => {
         logger.debug('Options:', options);
-        return newDebateZone(input);
+        return newDebateZone(input, options.userId);
     },
 });
 
-export const getListOfDebateZoneEndpoint = defaultEndpointsFactory.build({
+export const getListOfDebateZoneEndpoint = endpointsFactory.build({
     method: 'get',
     shortDescription: 'Get list debate zone',
     input: z.object({}),
     output: outputDebateZoneListSchema,
     handler: async ({ input, options, logger }) => {
         logger.debug('Options:', options);
-        return await getListDebateZone();
+        return await getListDebateZone(options.userId);
     },
 });
 
-export const getDebateZoneByIdEndpoint = defaultEndpointsFactory.build({
+export const getDebateZoneByIdEndpoint = endpointsFactory.build({
     method: 'get',
     shortDescription: 'Get debate zone by id',
     input: inputDebateZoneIdSchema,
     output: outputDebateZoneDetailsSchema,
     handler: async ({ input, options, logger }) => {
         logger.debug('Options:', options);
-        return await getDebateZoneById(input.id);
+        return await getDebateZoneById(input.id, options.userId);
     },
 });
 
-export const updateDebateZoneEndpoint = defaultEndpointsFactory.build({
+export const updateDebateZoneEndpoint = endpointsFactory.build({
     method: 'put',
     input: updateDebateZoneSchema,
     output: outputDebateZoneSchema,
@@ -69,7 +85,7 @@ export const updateDebateZoneEndpoint = defaultEndpointsFactory.build({
     },
 });
 
-export const joinDebateZoneEndpoint = defaultEndpointsFactory.build({
+export const joinDebateZoneEndpoint = endpointsFactory.build({
     method: 'post',
     shortDescription: 'Join debate zone',
     input: z.object({
@@ -82,41 +98,39 @@ export const joinDebateZoneEndpoint = defaultEndpointsFactory.build({
         logger,
     }): Promise<OutputDebateZoneDetail> => {
         logger.debug('Options:', options);
-        return await joinDebateZone(input.id);
+        return await joinDebateZone(input.id, options.userId);
     },
 });
 
-export const getActiveDebateZoneListEndpoint = defaultEndpointsFactory.build({
+export const getActiveDebateZoneListEndpoint = endpointsFactory.build({
     method: 'get',
     shortDescription: 'Get active debate zone list',
     input: z.object({}),
     output: outputActiveDebateZoneListSchema,
     handler: async ({ input, options, logger }) => {
         logger.debug('Options:', options);
-        return await getActiveDebateZones();
+        return await getActiveDebateZones(options.userId);
     },
 });
 
-export const getActiveDebateZoneDetailsEndpoint = defaultEndpointsFactory.build(
-    {
-        method: 'get',
-        shortDescription: 'Get active debate zone details',
-        input: inputActiveDebateZoneIdSchema,
-        output: outputActiveDebateZoneDetailsSchema,
-        handler: async ({ input, options, logger }) => {
-            logger.debug('Options:', options);
-            return await getActiveDebateZoneDetails(input.id);
-        },
+export const getActiveDebateZoneDetailsEndpoint = endpointsFactory.build({
+    method: 'get',
+    shortDescription: 'Get active debate zone details',
+    input: inputActiveDebateZoneIdSchema,
+    output: outputActiveDebateZoneDetailsSchema,
+    handler: async ({ input, options, logger }) => {
+        logger.debug('Options:', options);
+        return await getActiveDebateZoneDetails(input.id);
     },
-);
+});
 
-export const getProfileDebateZoneListEndpoint = defaultEndpointsFactory.build({
+export const getProfileDebateZoneListEndpoint = endpointsFactory.build({
     method: 'get',
     shortDescription: 'Get profile debate zone list',
     input: z.object({}),
     output: outputProfileDebateZoneListSchema,
     handler: async ({ input, options, logger }) => {
         logger.debug('Options:', options);
-        return await getProfileDebateZoneList();
+        return await getProfileDebateZoneList(options.userId);
     },
 });
