@@ -85,33 +85,65 @@ export const getActiveDebateZones = async (
 
 export const getActiveDebateZoneDetails = async (
     id: string,
+    userId: string,
 ): Promise<OutputActiveDebateZoneDetails> => {
     const debateZone: DebateZone | null = await debateZoneDbController.findOne({
-        $and: [
+        $or: [
             {
-                date: {
-                    $lte: new Date(),
-                },
-            },
-            {
-                finishDate: {
-                    $gte: new Date(),
-                },
-            },
-            {
-                $or: [
+                $and: [
                     {
-                        isPrivate: false,
+                        date: {
+                            $lte: new Date(),
+                        },
                     },
                     {
-                        isPrivate: {
-                            $exists: false,
+                        finishDate: {
+                            $gte: new Date(),
                         },
+                    },
+                    {
+                        $or: [
+                            {
+                                isPrivate: false,
+                            },
+                            {
+                                isPrivate: {
+                                    $exists: false,
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        _id: id,
                     },
                 ],
             },
             {
-                _id: id,
+                $and: [
+                    {
+                        date: {
+                            $lte: new Date(),
+                        },
+                    },
+                    {
+                        finishDate: {
+                            $gte: new Date(),
+                        },
+                    },
+                    {
+                        isPrivate: true,
+                    },
+                    {
+                        $or: [
+                            {
+                                'participants.userId': userId,
+                            },
+                            {
+                                userId: userId,
+                            },
+                        ],
+                    },
+                ],
             },
         ],
     });

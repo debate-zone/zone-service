@@ -25,7 +25,7 @@ import {
     getActiveDebateZoneDetails,
     getActiveDebateZones,
 } from './services/activeDebateZoneService';
-import { getProfileDebateZoneList } from './services/profileDebateZoneService';
+import {getProfileDebateZoneList, getProfileMyDebateZoneList} from './services/profileDebateZoneService';
 
 export const authMiddleware = createMiddleware({
     input: z.object({}),
@@ -120,7 +120,7 @@ export const getActiveDebateZoneDetailsEndpoint = endpointsFactory.build({
     output: outputActiveDebateZoneDetailsSchema,
     handler: async ({ input, options, logger }) => {
         logger.debug('Options:', options);
-        return await getActiveDebateZoneDetails(input.id);
+        return await getActiveDebateZoneDetails(input.id, options.userId);
     },
 });
 
@@ -134,3 +134,14 @@ export const getProfileDebateZoneListEndpoint = endpointsFactory.build({
         return await getProfileDebateZoneList(options.userId);
     },
 });
+
+export const getProfileCreatedDebateZoneListEndpoint = endpointsFactory.build({
+    method: 'get',
+    shortDescription: 'Get profile created debate zone list',
+    input: z.object({}),
+    output: outputProfileDebateZoneListSchema,
+    handler: async ({ input, options, logger }) => {
+        logger.debug('Options:', options);
+        return await getProfileMyDebateZoneList(options.userId);
+    }
+})

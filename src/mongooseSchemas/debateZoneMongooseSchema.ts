@@ -8,7 +8,7 @@ import { CollectionsEnum } from '../../../debate-zone-micro-service-common-libra
 
 export type DebateZoneDocument = Document & DebateZone;
 
-export const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
+const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
     userId: {
         type: Types.ObjectId,
         ref: CollectionsEnum.USER,
