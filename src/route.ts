@@ -7,7 +7,7 @@ import {
     updateDebateZoneEndpoint,
     getActiveDebateZoneListEndpoint,
     getActiveDebateZoneDetailsEndpoint,
-    getProfileDebateZoneListEndpoint,
+    getProfileDebateZoneListEndpoint, getProfileCreatedDebateZoneListEndpoint,
 } from './endpoint';
 
 export const routing: Routing = {
@@ -24,6 +24,7 @@ export const routing: Routing = {
             },
             profile: {
                 list: getProfileDebateZoneListEndpoint,
+                "my-list": getProfileCreatedDebateZoneListEndpoint,
             },
         },
     },
