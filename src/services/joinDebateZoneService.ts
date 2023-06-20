@@ -3,6 +3,7 @@ import { Role } from '../enums/role';
 import { debateZoneDbController } from '../dbControllers/debateZoneDbController';
 import { createHttpError } from 'express-zod-api';
 import { getDebateZoneById } from './baseDebateZoneService';
+import { produceNotificationForHostUser } from '../kafka/producer/notification';
 
 function validateJoin(outputDebateZoneDetail: OutputDebateZoneDetail) {
     if (outputDebateZoneDetail.isTimeExpiredToJoin) {
@@ -18,22 +19,25 @@ function validateJoin(outputDebateZoneDetail: OutputDebateZoneDetail) {
 
 export const joinDebateZone = async (
     id: string,
-    userId: string,
+    user: {
+        userId: string;
+        fullName: string;
+    },
 ): Promise<OutputDebateZoneDetail> => {
     const outputDebateZoneDetail: OutputDebateZoneDetail =
-        await getDebateZoneById(id, userId);
+        await getDebateZoneById(id, user.userId);
 
     validateJoin(outputDebateZoneDetail);
 
     if (outputDebateZoneDetail.participants) {
         outputDebateZoneDetail.participants.push({
-            userId: userId,
+            userId: user.userId,
             role: Role.DEBATER,
         });
     } else {
         outputDebateZoneDetail.participants = [
             {
-                userId: userId,
+                userId: user.userId,
                 role: Role.DEBATER,
             },
         ];
@@ -49,7 +53,15 @@ export const joinDebateZone = async (
     if (!savedDebateZone) {
         throw createHttpError(500, 'Could not save debate zone.');
     } else {
-        return await getDebateZoneById(id, userId);
+        await produceNotificationForHostUser({
+            producerUserId: user.userId,
+            producerFullName: user.fullName,
+            debateZoneId: id,
+            debateZoneTitle: savedDebateZone.title,
+            debateZoneShortDescription: savedDebateZone.shortDescription,
+            consumerUserId: savedDebateZone.userId,
+        });
+        return await getDebateZoneById(id, user.userId);
     }
 };
 

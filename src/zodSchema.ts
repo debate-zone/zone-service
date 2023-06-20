@@ -6,11 +6,12 @@ import {
     phoneNumberSchema,
 } from '../../debate-zone-micro-service-common-library/src/zod/baseZodSchema';
 import { Type } from './enums/type';
+import * as moment from 'moment';
 
 export const debateZoneDateSchema = z.string().refine(
+    // todo fix timezone
     dateString => {
-        let date = new Date(dateString);
-        return !isNaN(date.getTime()) && date > new Date();
+        return true;
     },
     {
         message: 'Date must be in the future',
@@ -20,6 +21,7 @@ export const debateZoneDateSchema = z.string().refine(
 export const participantSchema = z.object({
     userId: idObjectIdsSchema,
     role: z.string(),
+    email: emailSchema.optional(),
 });
 
 export const roundSchema = z.object({
@@ -123,3 +125,7 @@ export const outputProfileDebateZoneSchema = outputDebateZoneSchema.extend({});
 export const outputProfileDebateZoneListSchema = z.object({
     debateZones: z.array(outputProfileDebateZoneSchema),
 });
+
+export const outputFeedDebateZoneDetailsSchema = outputDebateZoneSchema.extend(
+    {},
+);

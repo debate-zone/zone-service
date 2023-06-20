@@ -7,7 +7,10 @@ import {
     updateDebateZoneEndpoint,
     getActiveDebateZoneListEndpoint,
     getActiveDebateZoneDetailsEndpoint,
-    getProfileDebateZoneListEndpoint, getProfileCreatedDebateZoneListEndpoint,
+    getProfileDebateZoneListEndpoint,
+    getProfileCreatedDebateZoneListEndpoint,
+    getFeedDebateZonesEndpoint,
+    getFeedDebateZoneDetailsByIdEndpoint,
 } from './endpoint';
 
 export const routing: Routing = {
@@ -22,9 +25,13 @@ export const routing: Routing = {
                 list: getActiveDebateZoneListEndpoint,
                 details: getActiveDebateZoneDetailsEndpoint,
             },
+            feed: {
+                list: getFeedDebateZonesEndpoint,
+                details: getFeedDebateZoneDetailsByIdEndpoint,
+            },
             profile: {
                 list: getProfileDebateZoneListEndpoint,
-                "my-list": getProfileCreatedDebateZoneListEndpoint,
+                'my-list': getProfileCreatedDebateZoneListEndpoint,
             },
         },
     },

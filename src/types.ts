@@ -8,6 +8,7 @@ import {
     outputDebateZoneDetailsSchema,
     outputDebateZoneListSchema,
     outputDebateZoneSchema,
+    outputFeedDebateZoneDetailsSchema,
     outputProfileDebateZoneListSchema,
     outputProfileDebateZoneSchema,
     participantSchema,
@@ -54,4 +55,8 @@ export type OutputProfileDebateZone = z.infer<
 
 export type OutputProfileDebateZoneList = z.infer<
     typeof outputProfileDebateZoneListSchema
+>;
+
+export type OutputFeedDebateZoneDetails = z.infer<
+    typeof outputFeedDebateZoneDetailsSchema
 >;

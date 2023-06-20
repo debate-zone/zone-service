@@ -8,6 +8,7 @@ import {
     outputDebateZoneDetailsSchema,
     outputDebateZoneListSchema,
     outputDebateZoneSchema,
+    outputFeedDebateZoneDetailsSchema,
     outputNewDebateZoneSchema,
     outputProfileDebateZoneListSchema,
     updateDebateZoneSchema,
@@ -25,17 +26,28 @@ import {
     getActiveDebateZoneDetails,
     getActiveDebateZones,
 } from './services/activeDebateZoneService';
-import {getProfileDebateZoneList, getProfileMyDebateZoneList} from './services/profileDebateZoneService';
+import {
+    getProfileDebateZoneList,
+    getProfileMyDebateZoneList,
+} from './services/profileDebateZoneService';
+import {
+    getFeedDebateZoneDetails,
+    getFeedDebateZones,
+} from './services/feedDebateZoneService';
 
 export const authMiddleware = createMiddleware({
     input: z.object({}),
     middleware: async ({ input: {}, request, logger }) => {
         const userId = request.headers['x-user-id'] as string;
-        const userRole = request.headers['x-user-role'] as string;
+        const role = request.headers['x-role'] as string;
+        const email = request.headers['x-email'] as string;
+        const fullName = request.headers['x-full-name'] as string;
 
         return {
             userId,
-            userRole,
+            role,
+            email,
+            fullName,
         };
     },
 });
@@ -49,7 +61,7 @@ export const createDebateZoneEndpoint = endpointsFactory.build({
     output: outputNewDebateZoneSchema,
     handler: async ({ input, options, logger }) => {
         logger.debug('Options:', options);
-        return newDebateZone(input, options.userId);
+        return newDebateZone(input, options);
     },
 });
 
@@ -98,7 +110,7 @@ export const joinDebateZoneEndpoint = endpointsFactory.build({
         logger,
     }): Promise<OutputDebateZoneDetail> => {
         logger.debug('Options:', options);
-        return await joinDebateZone(input.id, options.userId);
+        return await joinDebateZone(input.id, options);
     },
 });
 
@@ -143,5 +155,27 @@ export const getProfileCreatedDebateZoneListEndpoint = endpointsFactory.build({
     handler: async ({ input, options, logger }) => {
         logger.debug('Options:', options);
         return await getProfileMyDebateZoneList(options.userId);
-    }
-})
+    },
+});
+
+export const getFeedDebateZonesEndpoint = endpointsFactory.build({
+    method: 'get',
+    shortDescription: 'Get feed debate zone list',
+    input: z.object({}),
+    output: outputDebateZoneListSchema,
+    handler: async ({ input, options, logger }) => {
+        logger.debug('Options:', options);
+        return await getFeedDebateZones(options.userId);
+    },
+});
+
+export const getFeedDebateZoneDetailsByIdEndpoint = endpointsFactory.build({
+    method: 'get',
+    shortDescription: 'Get feed debate zone details by id',
+    input: inputDebateZoneIdSchema,
+    output: outputFeedDebateZoneDetailsSchema,
+    handler: async ({ input, options, logger }) => {
+        logger.debug('Options:', options);
+        return await getFeedDebateZoneDetails(input.id, options.userId);
+    },
+});
