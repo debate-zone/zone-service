@@ -1,5 +1,6 @@
 import { debateZoneDbController } from '../dbControllers/debateZoneDbController';
 import { OutputProfileDebateZone, OutputProfileDebateZoneList } from '../types';
+import { ParticipantStatus } from '../../../../common-library/src/debateZone/types';
 
 export const getProfileDebateZoneList = async (
     userId: string,
@@ -13,7 +14,14 @@ export const getProfileDebateZoneList = async (
                     },
                 },
                 {
-                    'participants.userId': userId,
+                    $and: [
+                        {
+                            'participants.userId': userId,
+                        },
+                        {
+                            'participants.status': ParticipantStatus.ACCEPTED,
+                        },
+                    ],
                 },
             ],
         },
@@ -59,5 +67,4 @@ export const getProfileMyDebateZoneList = async (
     return {
         debateZones: outputProfileDebateZone,
     };
-}
-
+};
