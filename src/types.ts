@@ -1,5 +1,6 @@
 import {
     debateZoneSchema,
+    inputJoinDebateZoneSchema,
     newDebateZoneSchema,
     newParticipantSchema,
     outputActiveDebateZoneDetailsSchema,
@@ -60,3 +61,11 @@ export type OutputProfileDebateZoneList = z.infer<
 export type OutputFeedDebateZoneDetails = z.infer<
     typeof outputFeedDebateZoneDetailsSchema
 >;
+
+export type InputJoinDebateZone = z.infer<typeof inputJoinDebateZoneSchema>;
+
+export enum RoundStatus {
+    PENDING = 'PENDING',
+    ACTIVE = 'ACTIVE',
+    FINISHED = 'FINISHED',
+}

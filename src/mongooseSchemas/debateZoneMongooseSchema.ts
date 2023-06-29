@@ -1,10 +1,14 @@
 import * as mongoose from 'mongoose';
 import { Document, Types } from 'mongoose';
-import { DebateZone } from '../types';
+import { DebateZone, RoundStatus } from '../types';
 import { baseSchema } from '../../../debate-zone-micro-service-common-library/src/mongoose/baseSchema';
 import { Type } from '../enums/type';
 import { Role } from '../enums/role';
 import { CollectionsEnum } from '../../../debate-zone-micro-service-common-library/src/enums/collectionsEnum';
+import {
+    ParticipantStatus,
+    DebateZoneStatus,
+} from '../../../../common-library/src/debateZone/types';
 
 export type DebateZoneDocument = Document & DebateZone;
 
@@ -33,7 +37,18 @@ const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
             isFinished: {
                 type: Boolean,
             },
+            status: {
+                type: String,
+                enum: Object.values(RoundStatus),
+                required: true,
+            },
         },
+    },
+    status: {
+        type: String,
+        enum: Object.values(DebateZoneStatus),
+        required: true,
+        default: DebateZoneStatus.PENDING,
     },
     shortDescription: {
         type: String,
@@ -75,6 +90,12 @@ const debateZoneMongooseSchema: mongoose.Schema = baseSchema.add({
                 type: String,
                 enum: Object.values(Role),
                 required: true,
+            },
+            status: {
+                type: String,
+                enum: Object.values(ParticipantStatus),
+                required: true,
+                default: ParticipantStatus.PENDING,
             },
         },
     },

@@ -7,6 +7,7 @@ import {
     OutputDebateZoneList,
     Participant,
     Round,
+    RoundStatus,
     UpdateDebateZone,
 } from '../types';
 import { debateZoneDbController } from '../dbControllers/debateZoneDbController';
@@ -17,6 +18,7 @@ import axios from 'axios';
 import 'dotenv/config';
 import { isAlreadyJoined, isTimeExpiredToJoin } from './joinDebateZoneService';
 import { InvitedUserToDebate } from '../../../debate-zone-micro-service-common-library/src/kafka/types';
+import { ParticipantStatus } from '../../../../common-library/src/debateZone/types';
 
 async function notifyUserAboutInvite(
     options: {
@@ -85,6 +87,7 @@ async function handleParticipants(
         const participantToSave: Participant = {
             userId: user._id,
             role: Role.DEBATER,
+            status: ParticipantStatus.PENDING,
             email: participant.email,
         };
         participantsToSave.push(participantToSave);
@@ -100,7 +103,6 @@ export const newDebateZone = async (
     },
 ): Promise<DebateZone> => {
     const participants = await handleParticipants(saveDebateZoneInput);
-    // todo in dependence on type or add selector in new debate zone component
     const rounds: Round[] = [];
 
     participants.forEach(participant => {
@@ -108,6 +110,7 @@ export const newDebateZone = async (
             const round: Round = {
                 activeUserId: participant.userId,
                 time: saveDebateZoneInput.roundTime,
+                status: RoundStatus.PENDING,
             };
             rounds.push(round);
         }
@@ -117,7 +120,6 @@ export const newDebateZone = async (
         ...saveDebateZoneInput,
         userId: options.userId,
         date: new Date(saveDebateZoneInput.date),
-        //saveDebateZoneInput.roundTime is in minutes
         finishDate: new Date(
             new Date(saveDebateZoneInput.date).getTime() +
                 saveDebateZoneInput.roundTime * rounds.length * 60000,

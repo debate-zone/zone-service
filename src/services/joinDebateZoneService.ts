@@ -1,4 +1,8 @@
-import { DebateZone, OutputDebateZone, OutputDebateZoneDetail } from '../types';
+import {
+    DebateZone,
+    InputJoinDebateZone,
+    OutputDebateZoneDetail,
+} from '../types';
 import { Role } from '../enums/role';
 import { debateZoneDbController } from '../dbControllers/debateZoneDbController';
 import { createHttpError } from 'express-zod-api';
@@ -9,43 +13,63 @@ function validateJoin(outputDebateZoneDetail: OutputDebateZoneDetail) {
     if (outputDebateZoneDetail.isTimeExpiredToJoin) {
         throw createHttpError(400, 'Time is expired to join.');
     }
-    if (outputDebateZoneDetail.isAlreadyJoined) {
-        throw createHttpError(400, 'You are already joined.');
-    }
     if (outputDebateZoneDetail.isAlreadyFinished) {
         throw createHttpError(400, 'Debate zone is already finished.');
     }
 }
 
 export const joinDebateZone = async (
-    id: string,
+    inputJoinDebateZone: InputJoinDebateZone,
     user: {
         userId: string;
         fullName: string;
     },
 ): Promise<OutputDebateZoneDetail> => {
     const outputDebateZoneDetail: OutputDebateZoneDetail =
-        await getDebateZoneById(id, user.userId);
+        await getDebateZoneById(inputJoinDebateZone.id, user.userId);
 
     validateJoin(outputDebateZoneDetail);
 
-    if (outputDebateZoneDetail.participants) {
+    if (
+        outputDebateZoneDetail.participants &&
+        !isAlreadyJoined(outputDebateZoneDetail, user.userId)
+    ) {
         outputDebateZoneDetail.participants.push({
             userId: user.userId,
             role: Role.DEBATER,
+            status: inputJoinDebateZone.participantStatus,
         });
-    } else {
+    }
+
+    if (
+        outputDebateZoneDetail.participants &&
+        isAlreadyJoined(outputDebateZoneDetail, user.userId)
+    ) {
+        outputDebateZoneDetail.participants =
+            outputDebateZoneDetail.participants.map(participant => {
+                if (participant.userId.toString() === user.userId) {
+                    participant.status = inputJoinDebateZone.participantStatus;
+                }
+                return participant;
+            });
+    }
+
+    if (
+        !outputDebateZoneDetail.participants ||
+        outputDebateZoneDetail.participants.length === 0
+    ) {
         outputDebateZoneDetail.participants = [
             {
                 userId: user.userId,
                 role: Role.DEBATER,
+                status: inputJoinDebateZone.participantStatus,
             },
         ];
     }
     const savedDebateZone: DebateZone | null =
         await debateZoneDbController.save(
             {
-                _id: id,
+                _id: inputJoinDebateZone.id,
             },
             outputDebateZoneDetail as DebateZone,
         );
@@ -56,12 +80,15 @@ export const joinDebateZone = async (
         await produceNotificationForHostUser({
             producerUserId: user.userId,
             producerFullName: user.fullName,
-            debateZoneId: id,
+            debateZoneId: inputJoinDebateZone.id,
             debateZoneTitle: savedDebateZone.title,
             debateZoneShortDescription: savedDebateZone.shortDescription,
+            debateZoneParticipantStatus: savedDebateZone.participants?.find(
+                participant => participant.userId.toString() === user.userId,
+            )?.status,
             consumerUserId: savedDebateZone.userId,
         });
-        return await getDebateZoneById(id, user.userId);
+        return await getDebateZoneById(inputJoinDebateZone.id, user.userId);
     }
 };
 

@@ -6,7 +6,11 @@ import {
     phoneNumberSchema,
 } from '../../debate-zone-micro-service-common-library/src/zod/baseZodSchema';
 import { Type } from './enums/type';
-import * as moment from 'moment';
+import {
+    DebateZoneStatus,
+    ParticipantStatus,
+} from '../../../common-library/src/debateZone/types';
+import { RoundStatus } from './types';
 
 export const debateZoneDateSchema = z.string().refine(
     // todo fix timezone
@@ -21,12 +25,14 @@ export const debateZoneDateSchema = z.string().refine(
 export const participantSchema = z.object({
     userId: idObjectIdsSchema,
     role: z.string(),
+    status: z.nativeEnum(ParticipantStatus),
     email: emailSchema.optional(),
 });
 
 export const roundSchema = z.object({
     time: z.number(),
     activeUserId: idObjectIdsSchema,
+    status: z.nativeEnum(RoundStatus).default(RoundStatus.PENDING),
     isFinished: z.boolean().optional(),
 });
 
@@ -38,6 +44,7 @@ export const debateZoneSchema = baseZodSchema.extend({
     date: z.date(),
     finishDate: z.date(),
     rounds: z.array(roundSchema).optional(),
+    status: z.nativeEnum(DebateZoneStatus).default(DebateZoneStatus.PENDING),
     isPrivate: z.boolean().optional(),
     isAIReferee: z.boolean().optional(),
     isPublicChoice: z.boolean().optional(),
@@ -60,6 +67,7 @@ export const updateDebateZoneSchema = debateZoneSchema
 export const newParticipantSchema = participantSchema
     .omit({
         userId: true,
+        status: true,
     })
     .extend({
         email: emailSchema.optional(),
@@ -104,6 +112,11 @@ export const inputDebateZoneIdSchema = z.object({
 
 export const inputActiveDebateZoneIdSchema = z.object({
     id: idObjectIdsSchema,
+});
+
+export const inputJoinDebateZoneSchema = z.object({
+    id: z.string(),
+    participantStatus: z.nativeEnum(ParticipantStatus),
 });
 
 export const outputDebateZoneDetailsSchema = debateZoneSchema.extend({

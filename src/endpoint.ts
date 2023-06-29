@@ -2,6 +2,7 @@ import { createMiddleware, defaultEndpointsFactory } from 'express-zod-api';
 import {
     inputActiveDebateZoneIdSchema,
     inputDebateZoneIdSchema,
+    inputJoinDebateZoneSchema,
     newDebateZoneSchema,
     outputActiveDebateZoneDetailsSchema,
     outputActiveDebateZoneListSchema,
@@ -100,9 +101,7 @@ export const updateDebateZoneEndpoint = endpointsFactory.build({
 export const joinDebateZoneEndpoint = endpointsFactory.build({
     method: 'post',
     shortDescription: 'Join debate zone',
-    input: z.object({
-        id: z.string(),
-    }),
+    input: inputJoinDebateZoneSchema,
     output: outputDebateZoneDetailsSchema,
     handler: async ({
         input,
@@ -110,7 +109,7 @@ export const joinDebateZoneEndpoint = endpointsFactory.build({
         logger,
     }): Promise<OutputDebateZoneDetail> => {
         logger.debug('Options:', options);
-        return await joinDebateZone(input.id, options);
+        return await joinDebateZone(input, options);
     },
 });
 
