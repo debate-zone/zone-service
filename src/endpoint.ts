@@ -35,21 +35,22 @@ import {
     getFeedDebateZoneDetails,
     getFeedDebateZones,
 } from './services/feedDebateZoneService';
+import { AuthOptions } from '../../debate-zone-micro-service-common-library/src/types/auth';
 
 export const authMiddleware = createMiddleware({
     input: z.object({}),
     middleware: async ({ input: {}, request, logger }) => {
         const userId = request.headers['x-user-id'] as string;
-        const role = request.headers['x-role'] as string;
-        const email = request.headers['x-email'] as string;
-        const fullName = request.headers['x-full-name'] as string;
+        const userRole = request.headers['x-user-role'] as string;
+        const userFullName = request.headers['x-user-full-name'] as string;
+        const userEmail = request.headers['x-user-email'] as string;
 
         return {
             userId,
-            role,
-            email,
-            fullName,
-        };
+            userRole,
+            userFullName,
+            userEmail,
+        } as AuthOptions;
     },
 });
 
@@ -71,7 +72,7 @@ export const getListOfDebateZoneEndpoint = endpointsFactory.build({
     shortDescription: 'Get list debate zone',
     input: z.object({}),
     output: outputDebateZoneListSchema,
-    handler: async ({ input, options, logger }) => {
+    handler: async ({ options, logger }) => {
         logger.debug('Options:', options);
         return await getListDebateZone(options.userId);
     },
@@ -118,7 +119,7 @@ export const getActiveDebateZoneListEndpoint = endpointsFactory.build({
     shortDescription: 'Get active debate zone list',
     input: z.object({}),
     output: outputActiveDebateZoneListSchema,
-    handler: async ({ input, options, logger }) => {
+    handler: async ({ options, logger }) => {
         logger.debug('Options:', options);
         return await getActiveDebateZones(options.userId);
     },
@@ -140,7 +141,7 @@ export const getProfileDebateZoneListEndpoint = endpointsFactory.build({
     shortDescription: 'Get profile debate zone list',
     input: z.object({}),
     output: outputProfileDebateZoneListSchema,
-    handler: async ({ input, options, logger }) => {
+    handler: async ({ options, logger }) => {
         logger.debug('Options:', options);
         return await getProfileDebateZoneList(options.userId);
     },
@@ -151,7 +152,7 @@ export const getProfileCreatedDebateZoneListEndpoint = endpointsFactory.build({
     shortDescription: 'Get profile created debate zone list',
     input: z.object({}),
     output: outputProfileDebateZoneListSchema,
-    handler: async ({ input, options, logger }) => {
+    handler: async ({ options, logger }) => {
         logger.debug('Options:', options);
         return await getProfileMyDebateZoneList(options.userId);
     },
@@ -162,7 +163,7 @@ export const getFeedDebateZonesEndpoint = endpointsFactory.build({
     shortDescription: 'Get feed debate zone list',
     input: z.object({}),
     output: outputDebateZoneListSchema,
-    handler: async ({ input, options, logger }) => {
+    handler: async ({ options, logger }) => {
         logger.debug('Options:', options);
         return await getFeedDebateZones(options.userId);
     },

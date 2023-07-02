@@ -19,12 +19,10 @@ import 'dotenv/config';
 import { isAlreadyJoined, isTimeExpiredToJoin } from './joinDebateZoneService';
 import { InvitedUserToDebate } from '../../../debate-zone-micro-service-common-library/src/kafka/types';
 import { ParticipantStatus } from '../../../../common-library/src/debateZone/types';
+import { AuthOptions } from '../../../debate-zone-micro-service-common-library/src/types/auth';
 
 async function notifyUserAboutInvite(
-    options: {
-        userId: string;
-        fullName: string;
-    },
+    authOptions: AuthOptions,
     debateZoneId: string,
     debateZoneTitle: string,
     debateZoneShortDescription: string,
@@ -34,8 +32,8 @@ async function notifyUserAboutInvite(
         debateZoneShortDescription: debateZoneShortDescription,
         debateZoneId: debateZoneId,
         debateZoneTitle: debateZoneTitle,
-        producerUserId: options.userId,
-        producerFullName: options.fullName,
+        producerUserId: authOptions.userId,
+        producerFullName: authOptions.userFullName,
         consumerUserId: newParticipant.userId,
         consumerEmail: newParticipant.email,
         consumerRole: newParticipant.role,
@@ -97,10 +95,7 @@ async function handleParticipants(
 
 export const newDebateZone = async (
     saveDebateZoneInput: NewDebateZone,
-    options: {
-        userId: string;
-        fullName: string;
-    },
+    authOptions: AuthOptions,
 ): Promise<DebateZone> => {
     const participants = await handleParticipants(saveDebateZoneInput);
     const rounds: Round[] = [];
@@ -118,7 +113,7 @@ export const newDebateZone = async (
 
     const debateZoneToSave: DebateZone | null = {
         ...saveDebateZoneInput,
-        userId: options.userId,
+        userId: authOptions.userId,
         date: new Date(saveDebateZoneInput.date),
         finishDate: new Date(
             new Date(saveDebateZoneInput.date).getTime() +
@@ -137,7 +132,7 @@ export const newDebateZone = async (
     } else {
         participants.forEach(participant => {
             notifyUserAboutInvite(
-                options,
+                authOptions,
                 debateZone._id,
                 debateZone.title,
                 debateZone.shortDescription,

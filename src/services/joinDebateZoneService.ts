@@ -8,6 +8,7 @@ import { debateZoneDbController } from '../dbControllers/debateZoneDbController'
 import { createHttpError } from 'express-zod-api';
 import { getDebateZoneById } from './baseDebateZoneService';
 import { produceNotificationForHostUser } from '../kafka/producer/notification';
+import { AuthOptions } from '../../../debate-zone-micro-service-common-library/src/types/auth';
 
 function validateJoin(outputDebateZoneDetail: OutputDebateZoneDetail) {
     if (outputDebateZoneDetail.isTimeExpiredToJoin) {
@@ -20,22 +21,19 @@ function validateJoin(outputDebateZoneDetail: OutputDebateZoneDetail) {
 
 export const joinDebateZone = async (
     inputJoinDebateZone: InputJoinDebateZone,
-    user: {
-        userId: string;
-        fullName: string;
-    },
+    authOptions: AuthOptions,
 ): Promise<OutputDebateZoneDetail> => {
     const outputDebateZoneDetail: OutputDebateZoneDetail =
-        await getDebateZoneById(inputJoinDebateZone.id, user.userId);
+        await getDebateZoneById(inputJoinDebateZone.id, authOptions.userId);
 
     validateJoin(outputDebateZoneDetail);
 
     if (
         outputDebateZoneDetail.participants &&
-        !isAlreadyJoined(outputDebateZoneDetail, user.userId)
+        !isAlreadyJoined(outputDebateZoneDetail, authOptions.userId)
     ) {
         outputDebateZoneDetail.participants.push({
-            userId: user.userId,
+            userId: authOptions.userId,
             role: Role.DEBATER,
             status: inputJoinDebateZone.participantStatus,
         });
@@ -43,11 +41,11 @@ export const joinDebateZone = async (
 
     if (
         outputDebateZoneDetail.participants &&
-        isAlreadyJoined(outputDebateZoneDetail, user.userId)
+        isAlreadyJoined(outputDebateZoneDetail, authOptions.userId)
     ) {
         outputDebateZoneDetail.participants =
             outputDebateZoneDetail.participants.map(participant => {
-                if (participant.userId.toString() === user.userId) {
+                if (participant.userId.toString() === authOptions.userId) {
                     participant.status = inputJoinDebateZone.participantStatus;
                 }
                 return participant;
@@ -60,7 +58,7 @@ export const joinDebateZone = async (
     ) {
         outputDebateZoneDetail.participants = [
             {
-                userId: user.userId,
+                userId: authOptions.userId,
                 role: Role.DEBATER,
                 status: inputJoinDebateZone.participantStatus,
             },
@@ -78,17 +76,21 @@ export const joinDebateZone = async (
         throw createHttpError(500, 'Could not save debate zone.');
     } else {
         await produceNotificationForHostUser({
-            producerUserId: user.userId,
-            producerFullName: user.fullName,
+            producerUserId: authOptions.userId,
+            producerFullName: authOptions.userFullName,
             debateZoneId: inputJoinDebateZone.id,
             debateZoneTitle: savedDebateZone.title,
             debateZoneShortDescription: savedDebateZone.shortDescription,
             debateZoneParticipantStatus: savedDebateZone.participants?.find(
-                participant => participant.userId.toString() === user.userId,
+                participant =>
+                    participant.userId.toString() === authOptions.userId,
             )?.status,
             consumerUserId: savedDebateZone.userId,
         });
-        return await getDebateZoneById(inputJoinDebateZone.id, user.userId);
+        return await getDebateZoneById(
+            inputJoinDebateZone.id,
+            authOptions.userId,
+        );
     }
 };
 

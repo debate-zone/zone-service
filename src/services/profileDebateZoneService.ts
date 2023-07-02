@@ -14,14 +14,12 @@ export const getProfileDebateZoneList = async (
                     },
                 },
                 {
-                    $and: [
-                        {
-                            'participants.userId': userId,
+                    participants: {
+                        $elemMatch: {
+                            userId: userId,
+                            status: ParticipantStatus.ACCEPTED,
                         },
-                        {
-                            'participants.status': ParticipantStatus.ACCEPTED,
-                        },
-                    ],
+                    },
                 },
             ],
         },
